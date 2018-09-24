@@ -152,7 +152,7 @@ if __name__ == '__main__':
         for i in range(100):
             print("="*i)
             if(i==0):
-                center_extract,group_extract,label_extract = centering(group,labels,0.5)
+                center_extract, group_extract, label_extract = centering(group,labels,0.5)
             else:
                 center_extract,group_extract,label_extract = centering(group_extract,label_extract,0.5)
             print("===CENTER_EXTRACT===")
