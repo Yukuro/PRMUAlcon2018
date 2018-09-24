@@ -2,6 +2,7 @@ import numpy as np
 import sys
 import pprint
 import time
+from  TargetClassifier_lv1 import LV1_TargetClassifier
 from labels import COLOR2ID
 from evaluation import IMAGE_SIZE
 from PIL import Image
@@ -93,7 +94,7 @@ def centering(group,label,radius):
         center_result[lb_area] = np.append(center_result[lb_area], len(arearank[lb_area]))
 
         for i in enumerate(arearank[lb_area]):
-            group = np.delete(group,np.where(group == i[1])[0],0)
+            group_list[0] = np.delete(group_list[0],np.where(group_list[0] == i[1])[0],0)
 
     for j in enumerate(group):
         label_result.append(getdictkey_str(group_dict,j[1]))
