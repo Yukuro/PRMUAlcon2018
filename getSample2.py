@@ -31,14 +31,14 @@ class getSample:
             if(i[0]+1 <= len(group)-1):
                 lb_new = group[i[0]+1][2]
             if lb_ord != lb_new:
-                index_list.append(i[0])
-        index_list.append(len(group)-1)
+                index_list.append(i[0]+1)
+        index_list.append(len(group))
         if(index_list[0] == 0 and index_list[1] == 0):
             index_list.pop(0)
 
         for k in enumerate(index_list):
-            if(k[0]+1 <= len(index_list)-1):
-                divided_list.append(group[index_list[k[0]-1]:index_list[k[0]+1]+1])
+            if(k[0]+1 < len(index_list)):
+                divided_list.append(group[index_list[k[0]]:index_list[k[0]+1]])
 
         return divided_list
 
