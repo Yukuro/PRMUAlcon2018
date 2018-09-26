@@ -47,19 +47,25 @@ class getSample:
     def getMaxpoint(self,grouplb):
         pointsrank = []
         findedpoints = []
-        for coord in enumerate(grouplb[1]):
+        #prevent maxpoint before assginment
+        maxpoint_counter = 0
+        for coord in enumerate(grouplb):
             lb = coord[1][2]
-            points = self.grouping(grouplb[1], coord[1][0:2], 0.25)
+            points = self.grouping(grouplb, coord[1][0:2], 0.25)
             #ones counter
             if coord[0] == 0:
                 len_tmp = -1
 
+            #ones counter avoided
             if len_tmp <= len(points):
                 maxpoint = points
+                maxpoint_counter = len(points)
                 len_tmp = len(points)
-        if len(maxpoint) >= 3:
+
+        if maxpoint_counter >= 3:
             pointsrank.append(maxpoint)
-        return pointsrank
+
+        return np.array(pointsrank)
 
 
 def main():
@@ -78,23 +84,27 @@ def main():
     features_list = sample.integrateFtlb(features, labels)
 
     for i in enumerate(features_list):
+        print(i[0])
+        print("="*60)
+        print("ENTER NEXT FEATURES_LIST!!!")
+        print("="*60)
+        center_coordlist = []
         group = sample.grouping(features_list, i[1], 0.5)
-        for k in enumerate(group):
-            if len(group) <= 1:
-                break
-            group_divided = sample.divideListlb((group))
-
-            for grouplb in enumerate(group_divided):
+        group_divided = sample.divideListlb((group))
+        for grouplb in group_divided:
+            while True:
+                print(len(grouplb))
                 center = sample.getMaxpoint(grouplb)
-                '''
-                print("="*60)
-                time.sleep(0.1)
-                pprint.pprint(center)
-                time.sleep(0.1)
-                print("*"*60)
-                '''
+                center_coordlist.append(center)
+
+                if len(center) == 0:
+                    break
+
+                #center[0]: prevent out of index
                 if len(center) > 0:
-                    group = sample.deleteElement(grouplb[1], center[0])
+                    grouplb = sample.deleteElement(grouplb, center[0])
+        print(center_coordlist)
+
 
     elapsed_time = time.time() - start
     print("elapsed_time is {}".format(elapsed_time))
