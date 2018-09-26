@@ -44,22 +44,21 @@ class getSample:
         return np.sort(np.array(
             [[x[0], x[1], x[2]] for x in features if np.linalg.norm([x[0] - target[0], x[1] - target[1]]) <= radius]),axis=0)
 
-    def getMaxpoint(self,group_divided):
+    def getMaxpoint(self,grouplb):
         pointsrank = []
-        for grouplb in enumerate(group_divided):
-            findedpoints = []
-            for coord in enumerate(grouplb[1]):
-                lb = coord[1][2]
-                points = self.grouping(grouplb[1], coord[1][0:2], 0.25)
-                #ones counter
-                if coord[0] == 0:
-                    len_tmp = -1
+        findedpoints = []
+        for coord in enumerate(grouplb[1]):
+            lb = coord[1][2]
+            points = self.grouping(grouplb[1], coord[1][0:2], 0.25)
+            #ones counter
+            if coord[0] == 0:
+                len_tmp = -1
 
-                if len_tmp <= len(points):
-                    maxpoint = points
-                    len_tmp = len(points)
-            if len(maxpoint) >= 3:
-                pointsrank.append(maxpoint)
+            if len_tmp <= len(points):
+                maxpoint = points
+                len_tmp = len(points)
+        if len(maxpoint) >= 3:
+            pointsrank.append(maxpoint)
         return pointsrank
 
 
@@ -85,9 +84,17 @@ def main():
                 break
             group_divided = sample.divideListlb((group))
 
-            center = sample.getMaxpoint(group_divided)
-
-            group = sample.deleteElement(group, center)
+            for grouplb in enumerate(group_divided):
+                center = sample.getMaxpoint(grouplb)
+                '''
+                print("="*60)
+                time.sleep(0.1)
+                pprint.pprint(center)
+                time.sleep(0.1)
+                print("*"*60)
+                '''
+                if len(center) > 0:
+                    group = sample.deleteElement(grouplb[1], center[0])
 
     elapsed_time = time.time() - start
     print("elapsed_time is {}".format(elapsed_time))
