@@ -25,8 +25,6 @@ class getSample:
         index_list = [0]
         divided_list = []
         for i in enumerate(group):
-            print(i)
-
             lb_ord = group[i[0]][2]
             if(i[0]+1 <= len(group)-1):
                 lb_new = group[i[0]+1][2]
@@ -46,8 +44,26 @@ class getSample:
         return np.sort(np.array(
             [[x[0], x[1], x[2]] for x in features if np.linalg.norm([x[0] - target[0], x[1] - target[1]]) <= radius]),axis=0)
 
+    def getMaxpoint(self,group_divided):
+        pointsrank = []
+        for grouplb in enumerate(group_divided):
+            findedpoints = []
+            for coord in enumerate(grouplb[1]):
+                lb = coord[1][2]
+                points = self.grouping(grouplb[1], coord[1][0:2], 0.25)
+                #ones counter
+                if coord[0] == 0:
+                    len_tmp = -1
 
-if __name__ == '__main__':
+                if len_tmp <= len(points):
+                    maxpoint = points
+                    len_tmp = len(points)
+            if len(maxpoint) >= 3:
+                pointsrank.append(maxpoint)
+        return pointsrank
+
+
+def main():
     start = time.time()
 
     n_sample = 100
@@ -55,24 +71,26 @@ if __name__ == '__main__':
     target = LV1_TargetClassifier()
     target.load(r"D:\Data\PRMUalcon\2018\work\lv1_targets\classifier_01.png")
 
-    features = np.array([[2 * np.random.rand() - 1, 2 * np.random.rand() - 1] for i in range(n_sample)])
+    features = np.array(
+        [[2 * np.random.rand() - 1, 2 * np.random.rand() - 1] for i in range(n_sample)])
     labels = target.predict(features)
 
     sample = getSample()
-    features_list = sample.integrateFtlb(features,labels)
+    features_list = sample.integrateFtlb(features, labels)
 
-    for i in features_list:
-        group = sample.grouping(features_list,i,0.5)
-        group_divided = sample.divideListlb((group))
+    for i in enumerate(features_list):
+        group = sample.grouping(features_list, i[1], 0.5)
+        for k in enumerate(group):
+            if len(group) <= 1:
+                break
+            group_divided = sample.divideListlb((group))
 
-        #get center group
-        for m in group:
-            lb = m[2]
-            center = sample.grouping(group, m[0:2], 0.25)
+            center = sample.getMaxpoint(group_divided)
 
-        #delete center elements from group
-        #group = sample.deleteElement(group,center)
-
+            group = sample.deleteElement(group, center)
 
     elapsed_time = time.time() - start
     print("elapsed_time is {}".format(elapsed_time))
+
+if __name__ == '__main__':
+    main()
