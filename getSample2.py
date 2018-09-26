@@ -95,10 +95,10 @@ def main():
             while True:
                 print(len(grouplb))
                 center = sample.getMaxpoint(grouplb)
-                center_coordlist.append(center)
 
                 if len(center) == 0:
                     break
+                center_coordlist.append(center)
 
                 #center[0]: prevent out of index
                 if len(center) > 0:
