@@ -113,13 +113,16 @@ class getSample:
 
     #give SORTED intersection_list
     def getCircle(self,intersection_list):
-        x = 0.0
-        y = 0.0
+        circlelist = []
+        x_low, y_low = 0.0, 0.0
         for inter in enumerate(intersection_list):
-            for coord in inter[1]:
-                #ones counter
-                if inter[0] == 0:
-
+            x_high,y_high = inter[1][0][0], inter[1][0][1]
+            if inter[0] > 0:
+                radius = np.linalg.norm([x_high - x_low, y_high - y_low]) / 2
+                center_x, center_y = (x_high + x_low) / 2, (y_high + y_low) / 2
+                circlelist.append([center_x,center_y,radius])
+            x_low, y_low = inter[1][1][0], inter[1][1][1]
+        return np.array(circlelist)
 
     def getEdge(self,combination,center_result):
         #get intersection when there are contact circle
@@ -153,7 +156,7 @@ class getSample:
 
             circle = self.getCircle(intersection_list)
 
-        return intersection_list
+        return circle
 
 
 def main():
@@ -165,12 +168,14 @@ def main():
     target = LV1_TargetClassifier()
     target.load(r"D:\Data\PRMUalcon\2018\work\lv1_targets\classifier_01.png")
 
-    features = np.array(
-        [[2 * np.random.rand() - 1, 2 * np.random.rand() - 1] for i in range(n_sample)])
+    features = np.array([[2 * np.random.rand() - 1, 2 * np.random.rand() - 1] for i in range(n_sample)])
     labels = target.predict(features)
 
     sample = getSample()
     features_list = sample.integrateFtlb(features, labels)
+
+    edgecircle_list = []
+    TESTedgelist = []
 
     for i in enumerate(features_list):
         print("="*60)
@@ -203,6 +208,13 @@ def main():
             # avoid to make null list
             if len(combination) > 0:
                 edge = sample.getEdge(combination,center_result)
+                #unpack edge group
+                for e in edge:
+                    if e[0] >= -1 and e[0] <= 1 and e[1] >= -1 and e[1] <= 1:
+                        edgecircle_list.append(e)
+                        TESTedgelist.append([e[0],e[1]])
+    TESTedgelist = np.array(TESTedgelist)
+    features_result = np.vstack((features,TESTedgelist))
 
 
 
