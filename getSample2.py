@@ -1,5 +1,4 @@
 import numpy as np
-import sys
 import pprint
 import time
 from itertools import combinations
@@ -7,8 +6,6 @@ from  TargetClassifier_lv1 import LV1_TargetClassifier
 from labels import COLOR2ID
 from evaluation import IMAGE_SIZE
 from PIL import Image
-from collections import defaultdict
-from collections import namedtuple
 from numba import jit
 
 #@jit
@@ -101,6 +98,62 @@ class getSample:
                 result.append([x_center,y_center,lb,radius])
         return result
 
+    def getLine(self,x1,y1,x2,y2):
+        a = (y2 - y1) / (x2 - x1)
+        b = y1 - a * x1
+        return a,b
+
+    def getIntersection(self,a,b,center):
+        i,k,r = center[0],center[1],center[3]
+        x_p = -a*b + i + a*k + np.sqrt(-np.square(b) - 2*a*b*i - np.square(a) * np.square(i) + 2*b*k + 2*a*i*k - np.square(k) + np.square(r) + np.square(a) * np.square(r))
+        x_m = -a*b + i + a*k - np.sqrt(-np.square(b) - 2*a*b*i - np.square(a) * np.square(i) + 2*b*k + 2*a*i*k - np.square(k) + np.square(r) + np.square(a) * np.square(r))
+        x_list = [x_p,x_m]
+        coord_list = [[x,a*x+b] for x in x_list]
+        return coord_list
+
+    #give SORTED intersection_list
+    def getCircle(self,intersection_list):
+        x = 0.0
+        y = 0.0
+        for inter in enumerate(intersection_list):
+            for coord in inter[1]:
+                #ones counter
+                if inter[0] == 0:
+
+
+    def getEdge(self,combination,center_result):
+        #get intersection when there are contact circle
+        for pair in combination:
+            # define all intersection
+            intersection_list = []
+
+            x1, y1 = pair[0][0], pair[0][1]
+            x2, y2 = pair[1][0], pair[1][1]
+            a, b = self.getLine(x1,y1,x2,y2)
+            u = np.array([x2 - x1, y2 - y1])
+            radius_pair = [pair[0][3],pair[1][3]]
+
+            for p in pair:
+                inter_pair = self.getIntersection(a, b, p)
+                intersection_list.append(inter_pair)
+
+            for center in center_result:
+                o_x, o_y = center[0], center[1]
+                radius_center = center[3]
+                v = np.array([o_x - x1, o_y - y1])
+                L = abs(np.cross(u, v) / np.linalg.norm(u))
+                if L > 0:
+                    #There are contact circle
+                    if L <= radius_center:
+                        inter = self.getIntersection(a,b,center)
+                        intersection_list.append(inter)
+
+            intersection_list = np.array(intersection_list)
+            intersection_list.sort(axis=0)
+
+            circle = self.getCircle(intersection_list)
+
+        return intersection_list
 
 
 def main():
@@ -149,7 +202,7 @@ def main():
             combination = sample.deleteDuplicatelb(combination)
             # avoid to make null list
             if len(combination) > 0:
-                pass
+                edge = sample.getEdge(combination,center_result)
 
 
 
