@@ -2,6 +2,7 @@ import numpy as np
 import sys
 import pprint
 import time
+from itertools import combinations
 from  TargetClassifier_lv1 import LV1_TargetClassifier
 from labels import COLOR2ID
 from evaluation import IMAGE_SIZE
@@ -20,6 +21,21 @@ class getSample:
             for k in element:
                 group = np.delete(group,np.where(i[0] == k[0] and i[1] == k[1])[0],0)
         return group
+
+    def deleteDuplicatelb(self,combination):
+        for pair in combination:
+            lb_ord = -1
+            for coord in enumerate(pair):
+                # ones counter
+                if coord[0] == 0:
+                    lb_ord = coord[1][2]
+                    continue
+
+                if coord[1][2] == lb_ord:
+                    combination.remove(pair)
+        return combination
+
+
 
     def divideListlb(self,group):
         index_list = [0]
@@ -104,7 +120,6 @@ def main():
     features_list = sample.integrateFtlb(features, labels)
 
     for i in enumerate(features_list):
-        print(i[0])
         print("="*60)
         print("ENTER NEXT FEATURES_LIST!!!")
         print("="*60)
@@ -127,6 +142,15 @@ def main():
         print(center_coordlist)
 
         center_result = sample.getCenter(center_coordlist,len(group),group_radius)
+
+        # avoid to make combinations from only one element list
+        if len(center_result) > 1:
+            combination = list(combinations(center_result,2))
+            combination = sample.deleteDuplicatelb(combination)
+            # avoid to make null list
+            if len(combination) > 0:
+                pass
+
 
 
     elapsed_time = time.time() - start
