@@ -8,6 +8,14 @@ from numba import jit
 
 #@jit
 class getSample:
+    #gibe 3D LIST (NOT NDARRY)
+    def unpack3Dlist(self,packed):
+        unpacked = []
+        for p in packed:
+            for k in p:
+                unpacked.append(k)
+        return unpacked
+
     def integrateFtlb(self,features,label):
         return np.array([[i[0],i[1],k] for i,k in zip(features,label)])
 
@@ -157,19 +165,34 @@ class getSample:
         return circle
 
     def getRadiusall(self,edgecircle_list):
-        squaredradius = 0.0
+        radius = 0.0
         for circle in edgecircle_list:
-            squaredradius += np.square(circle[2])
-        radius = np.abs(np.sqrt(squaredradius))
+            radius += circle[2]
         return radius
 
     def shootCircle(self,edgecircle_list,radius_all,n_edge):
         features = []
+        edgecounter = 0
         for circle in edgecircle_list:
-            circle_features = []
-            upper = int(np.trunc((circle[2] / radius_all) * n_edge))
-            if (len(circle_features) <= upper):
-                pass
+            #len_upper = int(np.trunc((circle[2] / radius_all) * n_edge))
+            edgecounter += 1
+            if edgecounter > n_edge:
+                break
+
+            x_lower,x_upper = circle[0] - circle[2], circle[0] + circle[2]
+            y_lower,y_upper = circle[1] - circle[2], circle[1] + circle[2]
+            x_features = np.random.uniform(x_lower,x_upper)
+            y_features = np.random.uniform(y_lower,y_upper)
+
+            circle_features = [[x_features,y_features]]
+            features.append(circle_features)
+
+
+        features = self.unpack3Dlist(features)
+        #features = np.array(features)
+
+        return features
+
 
 
 
@@ -233,7 +256,19 @@ def main():
 
         radius_all = sample.getRadiusall(edgecircle_list)
 
+    edge_features_all = []
+    while True:
         edge_features = sample.shootCircle(edgecircle_list,radius_all,n_edge)
+        print(len(edge_features),n_edge)
+        edge_features_all += edge_features
+
+        n_edge = n_edge - len(edge_features)
+        if (n_edge == 0):
+            break
+    edge_features_all = np.array(edge_features_all)
+
+    features_all = np.vstack((features,edge_features_all))
+
 
     elapsed_time = time.time() - start
     print("elapsed_time is {}".format(elapsed_time))
