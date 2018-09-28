@@ -3,9 +3,7 @@ import pprint
 import time
 from itertools import combinations
 from  TargetClassifier_lv1 import LV1_TargetClassifier
-from labels import COLOR2ID
-from evaluation import IMAGE_SIZE
-from PIL import Image
+from operator import itemgetter
 from numba import jit
 
 #@jit
@@ -158,11 +156,31 @@ class getSample:
 
         return circle
 
+    def getRadiusall(self,edgecircle_list):
+        squaredradius = 0.0
+        for circle in edgecircle_list:
+            squaredradius += np.square(circle[2])
+        radius = np.abs(np.sqrt(squaredradius))
+        return radius
+
+    def shootCircle(self,edgecircle_list,radius_all,n_edge):
+        features = []
+        for circle in edgecircle_list:
+            circle_features = []
+            upper = int(np.trunc((circle[2] / radius_all) * n_edge))
+            if (len(circle_features) <= upper):
+                pass
+
+
 
 def main():
     start = time.time()
 
-    n_sample = 100
+    sample_all = 200
+    sample_ratio = 0.5
+
+    n_sample = int(sample_all * sample_ratio)
+    n_edge = sample_all - n_sample
     group_radius = 0.5
 
     target = LV1_TargetClassifier()
@@ -175,7 +193,6 @@ def main():
     features_list = sample.integrateFtlb(features, labels)
 
     edgecircle_list = []
-    TESTedgelist = []
 
     for i in enumerate(features_list):
         print("="*60)
@@ -212,11 +229,11 @@ def main():
                 for e in edge:
                     if e[0] >= -1 and e[0] <= 1 and e[1] >= -1 and e[1] <= 1:
                         edgecircle_list.append(e)
-                        TESTedgelist.append([e[0],e[1]])
-    TESTedgelist = np.array(TESTedgelist)
-    features_result = np.vstack((features,TESTedgelist))
+        edgecircle_list.sort(key=itemgetter(2))
 
+        radius_all = sample.getRadiusall(edgecircle_list)
 
+        edge_features = sample.shootCircle(edgecircle_list,radius_all,n_edge)
 
     elapsed_time = time.time() - start
     print("elapsed_time is {}".format(elapsed_time))
