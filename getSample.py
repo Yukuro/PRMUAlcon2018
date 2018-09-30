@@ -1,7 +1,7 @@
 import numpy as np
 
 class getSample:
-    #gibe 3D LIST (NOT NDARRY)
+    #give 3D LIST (NOT NDARRY)
     def unpack3Dlist(self,packed):
         unpacked = []
         for p in packed:
@@ -36,6 +36,7 @@ class getSample:
     def divideListlb(self,group):
         index_list = [0]
         divided_list = []
+        lb_ord,lb_new = 0.0,0.0
         for i in enumerate(group):
             lb_ord = group[i[0]][2]
             if(i[0]+1 <= len(group)-1):
@@ -62,7 +63,7 @@ class getSample:
         maxpoint_counter = 0
         for coord in enumerate(grouplb):
             #define centering range and radius
-            points = self.grouping(grouplb, coord[1][0:2], 0.5)
+            points = self.grouping(grouplb, coord[1][0:2], 0.25)
             #ones counter
             if coord[0] == 0:
                 len_tmp = -1
@@ -180,83 +181,5 @@ class getSample:
 
 
         features = self.unpack3Dlist(features)
-        #features = np.array(features)
 
         return features
-
-
-
-
-def main():
-    start = time.time()
-
-    sample_all = 200
-    sample_ratio = 0.5
-
-    n_sample = int(sample_all * sample_ratio)
-    n_edge = sample_all - n_sample
-    group_radius = 0.5
-
-    target = LV1_TargetClassifier()
-    target.load(r"D:\Data\PRMUalcon\2018\work\lv1_targets\classifier_01.png")
-
-    features = np.array([[2 * np.random.rand() - 1, 2 * np.random.rand() - 1] for i in range(n_sample)])
-    labels = target.predict(features)
-
-    sample = getSample()
-    features_list = sample.integrateFtlb(features, labels)
-
-    edgecircle_list = []
-
-    for i in enumerate(features_list):
-        center_coordlist = []
-        group = sample.grouping(features_list, i[1], group_radius)
-        group_divided = sample.divideListlb((group))
-        for grouplb in group_divided:
-            while True:
-                center_coord = sample.getMaxpoint(grouplb)
-
-                if len(center_coord) == 0:
-                    break
-
-                center_coordlist.append(center_coord)
-
-                #center[0]: prevent out of index
-                if len(center_coord) > 0:
-                    grouplb = sample.deleteElement(grouplb, center_coord[0])
-
-        center_result = sample.getCenter(center_coordlist,len(group),group_radius)
-
-        # avoid to make combinations from only one element list
-        if len(center_result) > 1:
-            combination = list(combinations(center_result,2))
-            combination = sample.deleteDuplicatelb(combination)
-            # avoid to make null list
-            if len(combination) > 0:
-                edge = sample.getEdge(combination,center_result)
-                #unpack edge group
-                for e in edge:
-                    if e[0] >= -1 and e[0] <= 1 and e[1] >= -1 and e[1] <= 1:
-                        edgecircle_list.append(e)
-        edgecircle_list.sort(key=itemgetter(2))
-
-        radius_all = sample.getRadiusall(edgecircle_list)
-
-    edge_features_all = []
-    while True:
-        edge_features = sample.shootCircle(edgecircle_list,radius_all,n_edge)
-        edge_features_all += edge_features
-
-        n_edge = n_edge - len(edge_features)
-        if (n_edge == 0):
-            break
-    edge_features_all = np.array(edge_features_all)
-
-    features_all = np.vstack((features,edge_features_all))
-
-
-    elapsed_time = time.time() - start
-    print("elapsed_time is {}".format(elapsed_time))
-
-if __name__ == '__main__':
-    main()

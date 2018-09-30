@@ -3,6 +3,7 @@
 import sys
 import numpy as np
 import time
+import imp
 from PIL import Image
 from sklearn import neighbors
 from labels import COLOR2ID
@@ -59,15 +60,14 @@ class LV1_UserDefinedClassifier:
 def LV1_user_function_sampling(sample_all):
     start = time.time()
 
-    #sample_all = 200
-    sample_ratio = 0.5
+    sample_ratio = 0.7
 
     n_sample = int(sample_all * sample_ratio)
     n_edge = sample_all - n_sample
-    group_radius = 0.5
+    group_radius = 0.7
 
     target = LV1_TargetClassifier()
-    target.load(r"D:\Data\PRMUalcon\2018\work\lv1_targets\classifier_01.png")
+    target.load(sys.argv[1])
 
     features = np.array(
         [[2 * np.random.rand() - 1, 2 * np.random.rand() - 1] for i in range(n_sample)])
@@ -85,11 +85,12 @@ def LV1_user_function_sampling(sample_all):
         for grouplb in group_divided:
             while True:
                 center_coord = sample.getMaxpoint(grouplb)
-
                 if len(center_coord) == 0:
                     break
 
                 center_coordlist.append(center_coord)
+
+
 
                 # center[0]: prevent out of index
                 if len(center_coord) > 0:
@@ -97,12 +98,14 @@ def LV1_user_function_sampling(sample_all):
 
         center_result = sample.getCenter(center_coordlist, len(group), group_radius)
 
+
         # avoid to make combinations from only one element list
         if len(center_result) > 1:
             combination = list(combinations(center_result, 2))
             combination = sample.deleteDuplicatelb(combination)
             # avoid to make null list
             if len(combination) > 0:
+
                 edge = sample.getEdge(combination, center_result)
                 # unpack edge group
                 for e in edge:
@@ -146,8 +149,7 @@ if __name__ == '__main__':
     print("\nA target recognizer was loaded from {0} .".format(sys.argv[1]))
 
     # ターゲット認識器への入力として用いる二次元特徴量を用意
-    # このサンプルコードではひとまず1000サンプルを用意することにする
-    n = 200
+    n = 300
     features = LV1_user_function_sampling(sample_all=n)
     print("\n{0} features were sampled.".format(n))
 
